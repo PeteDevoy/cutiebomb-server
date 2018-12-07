@@ -4,4 +4,4 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 ## What I have discovered
 
 * Dinky Bomb communicates using Flash's XMLSocket class
-* Messages are sent as XML elements )(see: `docs/elements.xml`) and terminated by a null byte (`\x00`).
+* Messages are sent as XML elements (see: `docs/elements.xml`) and terminated by a null byte (`\x00`).
