@@ -1,0 +1,20 @@
+<policy-file-request/>
+
+<connect username="" avatar="" userid="" />
+<user username="" avatar="" userid="" />
+<invite targetUserId="" userid="" username="" avatar="" gameTypeId="" message="" />
+<chat chatMessage="" />
+<accept targetUserId="" userid="" username="" avatar="" gameTypeId="" message="Ok!" />
+<decline targetUserId="" targetUserName="" userid="" username=""  gameTypeId="" message="" />
+<cancel  targetUserId="" userid="" username="" gameTypeId="" message="" />
+<bad errorcode="" userid="" />
+<sound chatMessage="" />
+<recording playerNum="">
+    <action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/>
+</recording>
+<badcrccheck />
+<surrender name=""/>
+<exitToLobby userid=""/>
+<selection terrainChoice=""/>
+<disconnectUser/>
+<addUser/>
