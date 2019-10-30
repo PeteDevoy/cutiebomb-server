@@ -4,7 +4,15 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 ## What I have discovered
 
 * Dinky Bomb communicates using Flash's XMLSocket class
-* Messages are sent as XML elements (see: `docs/elements.xml`) and terminated by a null byte (`\x00`).
+* Messages are sent as XML elements (see: `docs/elements.xml`) and terminated by a null byte (`$\0`).
+
+## Roadmap
+
+- [x] get the game to run on localhost
+- [ ] mock XML for user interactions
+- [ ] figure out inter-process communication & global state. [ets](http://erlang.org/doc/man/ets.html)?
+- [ ] replace mock data with real data
+- [ ] deploy, for great justice
 
 ## State Transition Table
 (Work in progress)
@@ -28,3 +36,31 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 | TODO              | surrender_rx         |                |                                  |
 | TODO              | surrender_tx         |                |                                  |
 | game_over         | exit_to_lobby        | lobby_lurk     | send "ENTERED THE LOBBY" chat    |
+
+## Development
+
+### Build
+TODO.
+
+### Start a web server
+
+A web server is needed to avoid browser resource security problems.
+Python3 has a built-in web server:
+
+```bash
+cd cutiebomb-server
+python -m http.server
+```
+
+### Start the game server
+Start an erlang shell:
+```bash
+cd cutiebomb-server
+erL
+```
+
+At the erlang shell's `1>` prompt:
+
+```
+cbomb:start(normal, []).
+```
