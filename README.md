@@ -38,7 +38,7 @@ python -m http.server
 Start an erlang shell:
 ```bash
 cd cutiebomb-server
-erL
+erl
 ```
 
 At the erlang shell's `1>` prompt:
