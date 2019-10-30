@@ -7,7 +7,7 @@
 -export([start_link/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, {name, % player's name
+-record(state, {name, % p  layer's name
                 next, % next step, used when initializing
                 socket}). % the current socket
 
@@ -22,39 +22,57 @@ start_link(Socket) ->
 
 init(Socket) ->
     %% properly seeding the process
-    <<A:32, B:32, C:32>> = crypto:rand_bytes(12),
+    <<A:32, B:32, C:32>> = crypto:strong_rand_bytes(12),
     random:seed({A,B,C}),
-    %% Because accepting a connection is a blocking function call,
+    %% Because accepting a connection is a blocking functssion call,
     %% we can not do it in here. Forward to the server loop!
     gen_server:cast(self(), accept),
     {ok, #state{socket=Socket}}.
 
 %% init calls this via gen_server:cast to accept the TCP connection
 handle_cast(accept, S = #state{socket=ListenSocket}) ->
-    % wait accept connection to establish 
+    io:fwrite("handle_cast derp\n"), 
+    % wait accept connection to establish e
     {ok, AcceptSocket} = gen_tcp:accept(ListenSocket),
+    inet:setopts(AcceptSocket, [{active, once}, {packet, line}, {line_delimiter, $\0}]),
     cbomb_sup:start_socket(), %start acceptor child process
-    %send(AcceptSocket, "What's your character's name?", []),
+    %send(AcceptSocket, "<badxml/>", []),
+    io:fwrite("handle_cast returning... packet mode: line, line delim: null\n"),
     {noreply, S#state{socket=AcceptSocket, next=xml}}.
 
 handle_call(stop, _From, State) ->
-   {stop, normal, stopped, State};
-
+    {stop, normal, stopped, State};
+  
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
-handle_info(?SOCK(Str), S = #state{next=xml}) ->
-    Xml = line(Str),
+handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=xml}) ->
+    io:fwrite("handle_info state next=xml...\n"),
+    Tag = cbomb_xml:get_tag(Str),
+    Reply = cbomb_xml:get_response(Tag),
     %gen_server:cast(self(), roll_stats),
-    io:format("~p~n", [Xml]),
-    %{noreply, S#state{name=Name, next=stats}};
-    {noreply, S};
+    send(AcceptSocket, Reply, []),
+    {noreply, S#state{socket=AcceptSocket, next=xml}};
+
+%this is unused junk, should be deleted or used for another real state:
+handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=login}) ->
+    Tag = cbomb_xml:get_tag(Str),
+    Reply = cbomb_xml:get_response(Tag),
+    io:fwrite("handle_info state next=login...\n"),
+    %gen_server:cast(self(), roll_stats),
+    io:fwrite("<login/>\n"),
+    send(AcceptSocket, Reply, []),
+    {noreply, S#state{socket=AcceptSocket, next=stats}};
+
 handle_info(?SOCK(E), S = #state{socket=Socket}) ->
-    %send(Socket, "Unexpected input: ~p~n", [E]),
+    io:format("Unexpected input: ~p~n", [E]),
+    %send(Socket, "<badxml/>", [E]),
     {noreply, S};
 handle_info({tcp_closed, _Socket}, S) ->
+    io:fwrite("tcp closed...\n"),
     {stop, normal, S};
 handle_info({tcp_error, _Socket, _}, S) ->
+    io:fwrite("tcp error...\n"),
     {stop, normal, S};
 handle_info(E, S) ->
     io:format("unexpected: ~p~n", [E]),
@@ -88,11 +106,6 @@ terminate(_Reason, _State) ->
 %% turned back to passive mode. On each message reception, we turn
 %% the socket back to {active once} as to achieve rate limiting.
 send(Socket, Str, Args) ->
-    ok = gen_tcp:send(Socket, io_lib:format(Str++"~n", Args)),
+    ok = gen_tcp:send(Socket, io_lib:format(Str++[0], Args)),
     ok = inet:setopts(Socket, [{active, once}]),
     ok.
-
-%% Let's get rid of the whitespace and ignore whatever's after.
-%% makes it simpler to deal with telnet.
-line(Str) ->
-    hd(string:tokens(Str, "\r\n ")).

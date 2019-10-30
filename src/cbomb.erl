@@ -3,7 +3,11 @@
 -behaviour(application).
 -export([start/2, stop/1]).
 
-start(normal, []) ->
+start(_Type, _Args) ->
+    %TODO: check return val?
     cbomb_sup:start_link().
 
-stop(_) -> ok.
+stop(_State) ->
+    %TODO: cleanup
+    %cbomb_sup:stop_link(),
+    ok.

@@ -21,12 +21,13 @@ init([]) ->
     io:fwrite("init called\n"),
 
     %{ok, Port} = application:get_env(port),
-    Port = 4123,
+    Port = 8080,
     
     %% {active, once}? see https://stackoverflow.com/questions/51364148/
     %% {packet, line}? Line mode, a packet is a line-terminated with newline,
     %%                 lines longer than the receive buffer are truncated
-    {ok, ListenSocket} = gen_tcp:listen(Port, [{active,once}, {packet,line}]),
+    {ok, ListenSocket} = gen_tcp:listen(Port, [{ip, {127,0,0,1}}, {active,once}, {packet, 0}]),
+    %inet:setopts(ListenSocket, [{line_delimiter, NullByte}]),1
 
     RestartStrategy = simple_one_for_one,
     MaxRestarts = 60,

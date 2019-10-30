@@ -47,6 +47,20 @@ At the erlang shell's `1>` prompt:
 cbomb:start(normal, []).
 ```
 
+### Mocking incoming XML
+As a starting point `cbomb_xml.erl` is giving back mostly mock data.
+
+Chat messages are used to pull XML messages which would, in production, would be
+pushed in response to server or other-user events.
+
+To invoke the mock XML log-in with username `debug`:
+
+| Chat message | XML Sent to client                                                                                                |
+|--------------|-------------------------------------------------------------------------------------------------------|
+| addUser      | `<addUser username="mrwhite" avatar="1|GB"userid="2"/>`                                         |
+| rxChallenge  | `<invite message="0" gameTypeId="" userid="2" targetUserId="1" username="mrwhite" avatar="1"/>` |
+
+
 ### State Transition Table
 (Work in progress)
 
