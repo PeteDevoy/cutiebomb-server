@@ -12,6 +12,7 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 - [ ] mock XML for user interactions
 - [ ] figure out inter-process communication & global state. [ets](http://erlang.org/doc/man/ets.html)?
 - [ ] replace mock data with real data
+- [ ] implement any timeouts and resource clean-up required
 - [ ] deploy somewhere, for great justice
 
 ## Development
