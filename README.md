@@ -50,10 +50,10 @@ cbomb:start(normal, []).
 ### Mocking incoming XML
 As a starting point `cbomb_xml.erl` is giving back mostly mock data.
 
-Chat messages are used to pull XML messages which, in production, wouthbe
+Chat messages are used to pull XML messages which, in production, would be
 pushed in response to server or other-user events.
 
-To invoke the mock XML log-in with username `debug`:
+To invoke the mock XML log-in with username `debug` and send a chat message:
 
 | Chat message | XML Sent to client                                                                                                |
 |--------------|-------------------------------------------------------------------------------------------------------|
