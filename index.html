@@ -1,0 +1,79 @@
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<title>Dinky Debug</title>
+
+<STYLE type="text/css"><!--
+a:link {  color: #0066FF; text-decoration: none}
+a:active { color: #0066FF; text-decoration: none }
+a:visited { color: #0066FF; text-decoration: none }
+a:hover { color: #FFFFFF; text-decoration: none }
+--></STYLE>
+
+<script>
+function focusflash () {
+	self.movie.focus();
+}
+function shake(n) {
+if (self.moveBy) {
+for (i = 10; i > 0; i--) {
+for (j = n; j > 0; j--) {
+self.moveBy(0,i);
+self.moveBy(i,0);
+self.moveBy(0,-i);
+self.moveBy(-i,0);
+         }
+      }
+   }
+}
+
+if (window.Event) document.captureEvents(Event.MOUSEUP);
+function nocontextmenu(){
+	event.cancelBubble = true
+	event.returnValue = false;
+	return false;
+}
+function norightclick(e){
+	if (window.Event){
+		if (e.which == 2 || e.which == 3) return false;
+	} else if (event.button == 2 || event.button == 3){
+		event.cancelBubble = true
+		event.returnValue = false;
+		alert('Oops! Wrong mouse button...');
+		return false;
+	}
+}
+document.oncontextmenu = nocontextmenu;
+document.onmousedown = norightclick;
+
+</script>
+
+</head>
+<body bgcolor="#370F63" topmargin="0" leftmargin="0" scroll="no" style="overflow:hidden">
+
+<center>
+
+<script>
+<!--
+function addFlash(swf,w,h,bg,v,wmode,params,menu,q,scale,id,tab) {
+	if (swf==undefined) swf='main.swf';
+	if (w==undefined) w='100%';
+	if (h==undefined) h='100%';
+	if (v==undefined) v='6,0,65,0';
+	if (v.length==1) v += ',0,0,0';
+	if (menu==undefined) menu='false';
+	if (q==undefined) q='high';
+	if (bg==undefined) bg='#000000';
+	if (wmode==undefined) wmode='window';
+	if (scale==undefined) scale='showall';
+	if (id==undefined) id='movie';
+	if (tab==undefined) id='true';
+	var FlashVars = window.location.search.substring(1)+'&'+params;
+	document.write('<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version='+v+'" width="'+w+'" height="'+h+'" id="'+id+'" align="middle"> <param name="allowScriptAccess" value="sameDomain" /> <param name="movie" value="'+swf+'" /> <param name="SeamlessTabbing" value="'+tab+'"> <param name="loop" value="false" /> <param name="menu" value="'+menu+'" /> <param name="quality" value="'+q+'" /> <param name="wmode" value="'+wmode+'" /> <param name="scale" value="'+scale+'" /> <param name="FlashVars" value="browser=ie&'+FlashVars+'" /> <param name="bgcolor" value="'+bg+'" /><embed src="'+swf+'" loop="false" menu="'+menu+'" wmode="'+wmode+'" FlashVars="browser=mz&'+FlashVars+'" SeamlessTabbing="'+tab+'" scale="'+scale+'" quality="'+q+'" bgcolor="'+bg+'" width="'+w+'" height="'+h+'" name="'+id+'" align="middle" allowScriptAccess="sameDomain" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" /></embed></object>');
+}
+//-->
+</script>
+<script>addFlash('assets/dinkybomb-localhost.swf','780','460','#370F63','7,0,15,0','window','','false','best');</script>
+
+</body>
+</html>

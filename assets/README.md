@@ -1,0 +1,1 @@
+dinkybomb-localhost.swf must be placed in this directory
