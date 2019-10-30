@@ -4,7 +4,8 @@
 <user username="" avatar="" userid="" />
 <invite targetUserId="" userid="" username="" avatar="" gameTypeId="" message="" />
 <chat chatMessage="" />
-<accept targetUserId="" userid="" username="" avatar="" gameTypeId="" message="Ok!" />
+<accept message="Ok!" gameTypeId="" avatar="7" username="debug" userid="1" targetUserId="2" />
+<addedToService userid="" username=""/>
 <decline targetUserId="" targetUserName="" userid="" username=""  gameTypeId="" message="" />
 <cancel  targetUserId="" userid="" username="" gameTypeId="" message="" />
 <bad errorcode="" userid="" />
