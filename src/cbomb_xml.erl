@@ -13,7 +13,7 @@ get_tag(Packet) ->
   #tag{name=element(1, Simple), attributes=element(2, Simple), children=element(3, Simple)}.
     
 %handle(Msg, State) when Msg==#msg{to=void, no=3} ->
-get_response(T = #tag{name='policy-file-request'}) ->
+get_response(#tag{name='policy-file-request'}) ->
     "<?xml version=\"1.0\"?>"
     "<!DOCTYPE cross-domain-policy SEM \"/xml/dtds/cross-domain-policy.dtd\">"
     "<cross-domain-policy><site-control permitted-cross-domain-policies=\"all\"/>"
@@ -24,22 +24,22 @@ get_response(T = #tag{name=connect}) ->
     Username = proplists:get_value(username, T#tag.attributes),
     lists:concat(["<loggedOn username=\"", Username, "\" userid=\"1\"/>"]);
 
-get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> addUser"}]}) ->
+get_response(#tag{name=chat, attributes=[{chatMessage, "debug> addUser"}]}) ->
     %TODO: implement for real
     lists:concat(["<addUser username=\"mrwhite\" avatar=\"1|GB\" userid=\"2\"/>"]);
 
-get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> rxChallenge"}]}) ->
+get_response(#tag{name=chat, attributes=[{chatMessage, "debug> rxChallenge"}]}) ->
     %TODO: implement for real
     "<invite message=\"0\" gameTypeId=\"\" userid=\"2\" targetUserId=\"1\" username=\"mrwhite\" avatar=\"1\" />";
 
 %get_response(T = #tag{name=chat, attributes=[{chatMessage, "rxRecording"}]}) ->
     %TODO: implement for real
-%    "<recording playerNum=""><action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/></recording>";
+%    "<recording playerNum="3"><action x="150" y="150 r="50" splash="0" force="50" xforce="50" yforce="50" fire="0" weapon="1" crc="" energy1="" energy2="" energy3=""/></recording>";
 
-get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> addMrWhiteToService"}]}) ->
+get_response(#tag{name=chat, attributes=[{chatMessage, "debug> addMrWhiteToService"}]}) ->
     lists:concat(["<addedToService username=\"", "mrwhite", "\" userid=\"", "2" ,"\"/>"]);
 
-get_response(T = #tag{name=sound}) ->
+get_response(#tag{name=sound}) ->
     %just for fun, should not be the response for any sound tag
     "<sound chatMessage=\"jibjab\" />";
 
@@ -53,7 +53,7 @@ get_response(T = #tag{name=accept}) ->
     AcceptUsername = proplists:get_value(username, T#tag.attributes),
     lists:concat(["<addedToService username=\"", AcceptUsername, "\" userid=\"", AcceptUserId ,"\"/>"]);
 
-get_response(T = #tag{name=invite}) ->
+get_response(#tag{name=invite}) ->
     %[{message,"0"},
     %{gameTypeId,[]},
     %{avatar,"7"},
@@ -66,7 +66,7 @@ get_response(T = #tag{name=invite}) ->
     timer:sleep(2500),
     lists:concat(["<accept targetUserId=\"1\" userid=\"2\" username=\"mrwhite\" avatar=\"1|GB\" gameTypeId=\"\" message=\"Ok!\" />"]);
 
-get_response(T = #tag{name=cancel}) ->
+get_response(#tag{name=cancel}) ->
     %  [{message,"spoof withdrew their challenge"},
     %             {gameTypeId,[]},
     %             {username,"spoof"},
@@ -80,9 +80,9 @@ get_response(T = #tag{name=chat}) ->
     Message = proplists:get_value(chatMessage, T#tag.attributes),
     lists:concat(["<chat chatMessage=\"", Message, "\"/>"]).
 
-get_response_test() ->
-    'chat tag' = get_response(get_tag("<chat/>\0"))
-    .
-get_tag_test() ->
-    {'policy-file-request', [], []} = get_tag("<policy-file-request/>\0")
-    .
+%get_response_test() ->
+%    'chat tag' = get_response(get_tag("<chat/>\0"))
+%    .
+%get_tag_test() ->
+%    {'policy-file-request', [], []} = get_tag("<policy-file-request/>\0")
+%    .
