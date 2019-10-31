@@ -5,6 +5,7 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 
 * Dinky Bomb communicates using Flash's XMLSocket class
 * Messages are sent as XML elements (see: `docs/elements.xml`) and terminated by a null byte (`$\0`).
+* The cuties on each team are enumerated such that it is odds vs evens (DefineSprite 1022 > frame 1 > DoAction:19)
 
 ## Roadmap
 
