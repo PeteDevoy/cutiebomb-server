@@ -57,8 +57,9 @@ To invoke the mock XML log-in with username `debug`:
 
 | Chat message | XML Sent to client                                                                                                |
 |--------------|-------------------------------------------------------------------------------------------------------|
-| addUser      | `<addUser username="mrwhite" avatar="1|GB"userid="2"/>`                                         |
-| rxChallenge  | `<invite message="0" gameTypeId="" userid="2" targetUserId="1" username="mrwhite" avatar="1"/>` |
+| addUser              | `<addUser username="mrwhite" avatar="1|GB"userid="2"/>`                                         |
+| rxChallenge          | `<invite message="0" gameTypeId="" userid="2" targetUserId="1" username="mrwhite" avatar="1"/>` |
+| addMrWhiteToService  | `<addedToService username="mrwhite" userid="2"/>` |
 
 
 ### State Transition Table

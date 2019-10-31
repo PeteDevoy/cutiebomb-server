@@ -32,6 +32,27 @@ get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> rxChallenge"}
     %TODO: implement for real
     "<invite message=\"0\" gameTypeId=\"\" userid=\"2\" targetUserId=\"1\" username=\"mrwhite\" avatar=\"1\" />";
 
+get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> pid"}]}) ->
+    %TODO: implement for real
+    "<recording playerNum=""><action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/></recording>";
+
+
+%get_response(T = #tag{name=chat, attributes=[{chatMessage, "rxRecording"}]}) ->
+    %TODO: implement for real
+%    "<recording playerNum=""><action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/></recording>";
+
+get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> addMrWhiteToService"}]}) ->
+    lists:concat(["<addedToService username=\"", "mrwhite", "\" userid=\"", "2" ,"\"/>"]);
+
+get_response(T = #tag{name=sound}) ->
+    %just for fun, should not be the response for any sound tag
+    "<sound chatMessage=\"jibjab\" />";
+
+get_response(T = #tag{name=selection}) ->
+    TerrainChoice = proplists:get_value(terrainChoice, T#tag.attributes),
+    lists:concat(["<selection terrainChoice=\"", TerrainChoice, "\"/>"]);
+
+
 get_response(T = #tag{name=accept}) ->
     AcceptUserId = proplists:get_value(userid, T#tag.attributes),
     AcceptUsername = proplists:get_value(username, T#tag.attributes),
