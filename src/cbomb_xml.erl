@@ -32,11 +32,6 @@ get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> rxChallenge"}
     %TODO: implement for real
     "<invite message=\"0\" gameTypeId=\"\" userid=\"2\" targetUserId=\"1\" username=\"mrwhite\" avatar=\"1\" />";
 
-get_response(T = #tag{name=chat, attributes=[{chatMessage, "debug> pid"}]}) ->
-    %TODO: implement for real
-    "<recording playerNum=""><action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/></recording>";
-
-
 %get_response(T = #tag{name=chat, attributes=[{chatMessage, "rxRecording"}]}) ->
     %TODO: implement for real
 %    "<recording playerNum=""><action x="" y="" r="" splash="" force="" xforce="" yforce="" fire="" weapon="" crc="" energy1="" energy2="" energy3=""/></recording>";
