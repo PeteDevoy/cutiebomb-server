@@ -14,11 +14,11 @@
 -export([init/1]).
 
 start_link() ->
-    io:fwrite("start_link called\n"),
+    io:fwrite("cbomb_sup:start_link called\n"),
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    io:fwrite("init called\n"),
+    io:fwrite("cbomb_sup:init called\n"),
 
     %{ok, Port} = application:get_env(port),
     Port = 8080,
@@ -52,6 +52,7 @@ init([]) ->
     }.
 
 start_socket() ->
+    io:fwrite("cbomb_sup:start_socket called\n"),
     supervisor:start_child(?MODULE, []).
 
 %% Start with 20 listeners so that many multiple connections can

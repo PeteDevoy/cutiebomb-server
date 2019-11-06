@@ -2,7 +2,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([get_response/1, get_tag/1]).
+-export([get_response/1, get_tag/1, add_user/3, logged_on/2]).
 
 -record(tag, {name, attributes, children}).
 
@@ -24,9 +24,16 @@ get_response(T = #tag{name=connect}) ->
     Username = proplists:get_value(username, T#tag.attributes),
     lists:concat(["<loggedOn username=\"", Username, "\" userid=\"1\"/>"]);
 
+
+get_response(#tag{name=chat, attributes=[{chatMessage, "debug> erlbus"}]}) ->
+    %TODO: implement for real
+    ebus:pub("lobby", {rxbroadcast, "<chat chatMessage=\"broadcast msg\"/>"}),
+    "<chat chatMessage=\"debug erlbus\"/>";
+
 get_response(#tag{name=chat, attributes=[{chatMessage, "debug> addUser"}]}) ->
     %TODO: implement for real
-    lists:concat(["<addUser username=\"mrwhite\" avatar=\"1|GB\" userid=\"2\"/>"]);
+  lists:concat(["<addUser username=\"mrwhite\" avatar=\"1|GB\" userid=\"2\"/>"]);
+
 
 get_response(#tag{name=chat, attributes=[{chatMessage, "debug> rxChallenge"}]}) ->
     %TODO: implement for real
@@ -72,7 +79,7 @@ get_response(#tag{name=cancel}) ->
     %             {username,"spoof"},
     %             {userid,[]},
     %             {targetUserId,"2"}],
-    "<chat chatMessage=\"debug invite cancelled\"/>";
+     "<chat chatMessage=\"debug invite cancelled\"/>";
 
 %get_response(T = #tag{name=exitToLobby}) ->
 
@@ -86,3 +93,16 @@ get_response(T = #tag{name=chat}) ->
 %get_tag_test() ->
 %    {'policy-file-request', [], []} = get_tag("<policy-file-request/>\0")
 %    .
+
+pid_tokens(Pid) ->
+    PidStr = pid_to_list(Pid),
+    PidStr1 = lists:sublist(PidStr, 2, length(PidStr)-2),
+    [N, P1, P2] = [list_to_integer(T) || T <- string:tokens(PidStr1,[$.])],
+    {N, P1, P2}.
+
+
+add_user(Username, Avatar, ID) ->
+  lists:concat(["<addUser username=\"", Username, "\" avatar=\"", Avatar, "\" userid=\"", ID, "\"/>"]).
+
+logged_on(Username, ID) ->
+    lists:concat(["<loggedOn username=\"", Username, "\" userid=\"", ID, "\"/>"]).

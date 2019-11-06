@@ -1,0 +1,18 @@
+{application, cbomb,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {cbomb_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    crypto,
+    xmerl,
+    ebus
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["GNU GPL v3.0"]},
+  {links, []}
+ ]}.
