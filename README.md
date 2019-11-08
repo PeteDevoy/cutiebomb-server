@@ -44,9 +44,8 @@ python -m http.server
 ### Start the game server
 ```bash
 cd cutiebomb-server
-./_build/<profile>/rel/<release name>/bin/<release name>
+./_build/default/rel/cbombserver/bin/cbombserver console
 ```
-TODO fix path
 
 ### State Transition Table
 (Work in progress)
