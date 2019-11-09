@@ -126,19 +126,25 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=in_game}) ->
     %io:fwrite("handle_info state next=in_game...\n"),
     Tag = cbomb_xml:get_tag(Str),
     if
-        Tag#tag.name == exitToLobby ->      
+        Tag#tag.name == exitToLobby ->
+            %TODO handle surrender
+            
             LeavingUser = proplists:get_value(userid, Tag#tag.attributes, none),
             io:fwrite(lists:concat([S#state.name, " :: ebus:sub to lobby\n"])),
             ok = ebus:sub(self(), "lobby"), %sub to lobby messages
             AddUserTag = cbomb_xml:add_user(S#state.name, S#state.avatar,  S#state.userid),
             ok = ebus:pub("lobby", {lobby, AddUserTag}),
             NextState = lobby_lurk;
-        true -> 
+        Tag#tag.name == s ->
             io:fwrite(lists:concat([S#state.name, " ::  (", S#state.userid, ") -> Opponent (", S#state.opponentid, ") ", Tag#tag.name, "\n"])),
             ok = ebus:pub(S#state.opponentid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
             %because we don't send anything back we need to set the socket to
             %listen here because it will not called by the send() function
             ok = inet:setopts(AcceptSocket, [{active, once}]),
+            NextState = in_game;
+        true ->
+            ok = ebus:pub(S#state.opponentid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
+            ok = ebus:pub(S#state.userid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
             NextState = in_game
     end,
     %ok = ebus:pub(S#state.userid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
