@@ -104,6 +104,10 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
             TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
             ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
             ok = inet:setopts(AcceptSocket, [{active, once}]);
+        true == IsTargeted, Tag#tag.name == cancel ->
+            TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
+            ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
+            ok = inet:setopts(AcceptSocket, [{active, once}]);
         true ->
             TargetUser = none,
             Reply = cbomb_xml:get_response(Tag),
