@@ -86,6 +86,7 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=connect}) ->
     {noreply, S#state{name=Username, userid=PidStr, avatar=Avatar, next=lobby_lurk}};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
+    %TODO: below if statement should probably be split into different functions 
     io:fwrite(lists:concat([S#state.name, " :: sent message in lobby_lurk state\n"])),
     %io:fwrite("handle_info state next=lobby_lurk...\n"),
     Tag = cbomb_xml:get_tag(Str),
@@ -94,22 +95,22 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
         true == IsTargeted, Tag#tag.name == accept ->
             TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
             ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
-            NewState = lobby_lurk,
-            io:fwrite(lists:concat([S#state.name, " :: set state: lobby_lurk. (", S#state.userid, ")\n"]));
+            ok = inet:setopts(AcceptSocket, [{active, once}]);
         true == IsTargeted, Tag#tag.name == invite ->
             TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
             ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
-            NewState = lobby_lurk,
-            io:fwrite(lists:concat([S#state.name, " :: set state: lobby_lurk. (", S#state.userid, ")\n"]));
+            ok = inet:setopts(AcceptSocket, [{active, once}]);
+        true == IsTargeted, Tag#tag.name == decline ->
+            TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
+            ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
+            ok = inet:setopts(AcceptSocket, [{active, once}]);
         true ->
             TargetUser = none,
             Reply = cbomb_xml:get_response(Tag),
-            NewState = lobby_lurk,
-            io:fwrite(lists:concat([S#state.name, " :: set state: lobby_lurk. (", S#state.userid, ")\n"])),
             ok = ebus:pub("lobby", {lobby, Reply})
     end,
     %send(AcceptSocket, Reply, []),
-    {noreply, S#state{next=NewState, opponentid=TargetUser}};
+    {noreply, S#state{opponentid=TargetUser}};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=terrain_choice}) ->
     io:fwrite(lists:concat([S#state.name, " :: sent message in terrain_choice state\n"])),
@@ -235,9 +236,7 @@ handle_info({tcp_closed, _Socket}, S = #state{next=lobby_lurk}) ->
     {stop, normal, S};
 
 handle_info({tcp_closed, _Socket}, S = #state{next=in_game}) ->
-    %if in game, ebus:pub to opponent's channel whatever tag is needed (surrender?)
     Tag = cbomb_xml:disconnect_user(S#state.userid),
-
     %notify opponent
     ebus:pub(S#state.opponentid, {{private, disconnectUser}, Tag}),
     {stop, normal, S};
