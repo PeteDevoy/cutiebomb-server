@@ -53,7 +53,7 @@ cd cutiebomb-server
 | Current State     | Input                | Next State     | Output                           | Done
 |-------------------|----------------------|----------------|----------------------------------|------
 | flash_policy_wait | request_flash_policy | login_wait     | send policy doc                  | ☐
-| login_wait        | connect              | lobby_lurk     | send "ENTERED THE LOBBY" chat    | ☑
+| login_wait        | connect              | lobby_lurk     | sub to lobby, tx addUser tag     | ☑
 | lobby_lurk        | challenge_send       | challenger     | send challenge to opponent       | ☐
 | lobby_lurk        | challenge_receive    | challengee     | none                             | ☐
 | challenger        | challenge_cancel     | lobby_lurk     | send challenge cancellation      | ☐
@@ -67,4 +67,4 @@ cd cutiebomb-server
 | game_turn         | recording_tx         | game           | send recording                   | ☑
 | game              | surrender_rx         | game           | TODO                             | ☐
 | game              | surrender_tx         | game           | TODO                             | ☐
-| game              | exit_to_lobby        | lobby_lurk     | TODO                             | ☐
+| game              | exit_to_lobby        | lobby_lurk     | sub to lobby, tx addUser tag     | ☑

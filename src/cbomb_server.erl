@@ -73,8 +73,8 @@ handle_info(?SOCK(Str="<policy-file-request/>\0"), S = #state{socket=AcceptSocke
     {noreply, S};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=connect}) ->
-    io:fwrite("handle_info state next=connect...\n"),
-    io:fwrite(lists:concat(["connect xml is ", Str, "\n"])),
+    %io:fwrite("handle_info state next=connect...\n"),
+    %io:fwrite(lists:concat(["connect xml is ", Str, "\n"])),
     Tag = cbomb_xml:get_tag(Str),
     Username = proplists:get_value(username, Tag#tag.attributes),
     Avatar = proplists:get_value(avatar, Tag#tag.attributes),
@@ -86,20 +86,21 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=connect}) ->
     {noreply, S#state{name=Username, userid=PidStr, avatar=Avatar, next=lobby_lurk}};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
-    io:fwrite("handle_info state next=lobby_lurk...\n"),
+    io:fwrite(lists:concat([S#state.name, " :: sent message in lobby_lurk state\n"])),
+    %io:fwrite("handle_info state next=lobby_lurk...\n"),
     Tag = cbomb_xml:get_tag(Str),
     IsTargeted = proplists:is_defined(targetUserId, Tag#tag.attributes),
     if
         true == IsTargeted, Tag#tag.name == accept ->
             TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
             ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
-            NewState = terrain_choice,
-            io:fwrite(lists:concat([S#state.name, " :: set state: terrain_choice. (", S#state.userid, ")\n"]));
+            NewState = lobby_lurk,
+            io:fwrite(lists:concat([S#state.name, " :: set state: lobby_lurk. (", S#state.userid, ")\n"]));
         true == IsTargeted, Tag#tag.name == invite ->
             TargetUser = proplists:get_value(targetUserId, Tag#tag.attributes),
             ok = ebus:pub(TargetUser, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
             NewState = lobby_lurk,
-            io:fwrite(lists:concat([S#state.name, " :: set state: terrain_choice. (", S#state.userid, ")\n"]));
+            io:fwrite(lists:concat([S#state.name, " :: set state: lobby_lurk. (", S#state.userid, ")\n"]));
         true ->
             TargetUser = none,
             Reply = cbomb_xml:get_response(Tag),
@@ -111,31 +112,46 @@ handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
     {noreply, S#state{next=NewState, opponentid=TargetUser}};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=terrain_choice}) ->
-    io:fwrite("handle_info state next=terrain_choice...\n"),
+    io:fwrite(lists:concat([S#state.name, " :: sent message in terrain_choice state\n"])),
+    %io:fwrite("handle_info state next=terrain_choice...\n"),
     Tag = cbomb_xml:get_tag(Str),
-    io:fwrite(lists:concat([S#state.name, "(", S#state.userid, ") -> Self (", S#state.userid, ")", Str, "\n"])),
-    io:fwrite(lists:concat([S#state.name, "(", S#state.userid, ") -> Opponent (", S#state.opponentid, ")", Str, "\n"])),
+    %io:fwrite(lists:concat([S#state.name, "(", S#state.userid, ") -> Self (", S#state.userid, ")", Str, "\n"])),
+    %io:fwrite(lists:concat([S#state.name, "(", S#state.userid, ") -> Opponent (", S#state.opponentid, ")", Str, "\n"])),
     ok = ebus:pub(S#state.userid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
     ok = ebus:pub(S#state.opponentid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
-    io:fwrite(lists:concat([S#state.name, " :: set state: in_game. (", S#state.userid, ")\n"])),
-    {noreply, S#state{socket=AcceptSocket, next=in_game}};
+    {noreply, S#state{socket=AcceptSocket, next=terrain_choice}};
 
 handle_info(?SOCK(Str), S = #state{socket=AcceptSocket, next=in_game}) ->
-    io:fwrite("handle_info state next=in_game...\n"),
+    io:fwrite(lists:concat([S#state.name, " :: sent message in in_game state\n"])),
+    %io:fwrite("handle_info state next=in_game...\n"),
     Tag = cbomb_xml:get_tag(Str),
-    io:fwrite(lists:concat([S#state.name, "(", S#state.userid, ") -> Opponent (", S#state.opponentid, ")", Str, "\n"])),
-    ok = ebus:pub(S#state.opponentid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
+    if
+        Tag#tag.name == exitToLobby ->      
+            LeavingUser = proplists:get_value(userid, Tag#tag.attributes, none),
+            io:fwrite(lists:concat([S#state.name, " :: ebus:sub to lobby\n"])),
+            ok = ebus:sub(self(), "lobby"), %sub to lobby messages
+            AddUserTag = cbomb_xml:add_user(S#state.name, S#state.avatar,  S#state.userid),
+            ok = ebus:pub("lobby", {lobby, AddUserTag}),
+            NextState = lobby_lurk;
+        true -> 
+            io:fwrite(lists:concat([S#state.name, " ::  (", S#state.userid, ") -> Opponent (", S#state.opponentid, ") ", Tag#tag.name, "\n"])),
+            ok = ebus:pub(S#state.opponentid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
+            %because we don't send anything back we need to set the socket to
+            %listen here because it will not called by the send() function
+            ok = inet:setopts(AcceptSocket, [{active, once}]),
+            NextState = in_game
+    end,
     %ok = ebus:pub(S#state.userid, {{private, Tag#tag.name}, string:trim(Str, trailing, "\0")}),
-    {noreply, S};
+    io:fwrite(lists:concat([S#state.name, " :: leaving function\n"])),
+    {noreply, S#state{socket=AcceptSocket, next=NextState}};
 
 handle_info({lobby, Msg},  S = #state{socket=AcceptSocket}) ->
-    io:fwrite(lists:concat(["LOBBY: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    %io:fwrite(lists:concat(["LOBBY: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
     Tag = cbomb_xml:get_tag(Msg),
     if
         %if we have an addUser tag for another user, send them one for us
         Tag#tag.name == addUser ->
             ArrivingUser = proplists:get_value(userid, Tag#tag.attributes, none),
-            io:fwrite(lists:concat(["pong addUser: target is ", ArrivingUser, "we are ", S#state.userid, "\n"])),
             AddUserTag = cbomb_xml:add_user(S#state.name, S#state.avatar,  S#state.userid),
             ebus:pub(ArrivingUser, {{private, addUser}, AddUserTag}),
             send(AcceptSocket, Msg, []);
@@ -145,12 +161,12 @@ handle_info({lobby, Msg},  S = #state{socket=AcceptSocket}) ->
     {noreply, S};
 
 handle_info({{private, addUser}, Msg},  S = #state{socket=AcceptSocket}) ->
-    io:fwrite(lists:concat(["PRIVATE: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    %io:fwrite(lists:concat(["PRIVATE: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
     send(AcceptSocket, Msg, []),
     {noreply, S};
 
 handle_info({{private, accept}, Msg},  S = #state{socket=AcceptSocket}) ->
-    io:fwrite(lists:concat(["PRIVATE: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    %io:fwrite(lists:concat(["PRIVATE: ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
     Tag = cbomb_xml:get_tag(Msg),
     ChallengerID = proplists:get_value(targetUserId, Tag#tag.attributes),
     ChallengeeID = proplists:get_value(userid, Tag#tag.attributes),
@@ -165,24 +181,31 @@ handle_info({{private, accept}, Msg},  S = #state{socket=AcceptSocket}) ->
             OpponentID = ChallengeeID
     end,
     %challengee takes their turn first
-    io:fwrite(lists:concat([S#state.name, " :: set state: terrain_choice. I am ", S#state.name, " (", S#state.userid, ")\n"])),
-    {noreply, S#state{next=terrain_choice, opponentid=OpponentID}};
+    %io:fwrite(lists:concat([S#state.name, " :: set state: terrain_choice. I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    {noreply, S#state{opponentid=OpponentID}};
 
-handle_info({{private, addToService}},  S = #state{socket=AcceptSocket}) ->
-    io:fwrite(lists:concat(["PRIVATE (in_game:addToService) : I am ", S#state.name, " (", S#state.userid, ")\n"])),
+handle_info({{private, addToService}},  S = #state{socket=AcceptSocket, next=lobby_lurk}) ->
+    %io:fwrite(lists:concat(["PRIVATE (in_game:addToService) : I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    io:fwrite(lists:concat([S#state.name, " :: ebus:unsub from lobby\n"])),
+    ok = ebus:unsub(self(), "lobby"), %unsub from lobby messages
     Msg = lists:concat(["<addedToService username=\"", S#state.name, "\" userid=\"", S#state.userid ,"\"/>"]),
     %passthrough
     send(AcceptSocket, Msg, []),
-    {noreply, S};
+    {noreply, S#state{next=terrain_choice}};
 
 handle_info({{private, selection}, Msg},  S = #state{socket=AcceptSocket, next=terrain_choice}) ->
-    io:fwrite(lists:concat(["PRIVATE (terrain_choice): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
-    %passthrough
+    %io:fwrite(lists:concat(["PRIVATE (terrain_choice): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    io:fwrite(lists:concat([S#state.name, " :: set state: in_game. (", S#state.userid, ")\n"])),    
     send(AcceptSocket, Msg, []),
     {noreply, S#state{next=in_game}};
 
+handle_info({{private, s}, Msg},  S = #state{socket=AcceptSocket}) ->
+    %io:fwrite(lists:concat(["PRIVATE (in_game): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    send(AcceptSocket, Msg, []),
+    {noreply, S};
+
 handle_info({{private, _}, Msg},  S = #state{socket=AcceptSocket}) ->
-    io:fwrite(lists:concat(["PRIVATE (in_game): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
+    %io:fwrite(lists:concat(["PRIVATE (in_game): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
     %passthrough
     send(AcceptSocket, Msg, []),
     {noreply, S};
