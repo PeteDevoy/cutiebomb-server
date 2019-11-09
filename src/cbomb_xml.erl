@@ -2,7 +2,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([get_response/1, get_tag/1, add_user/3, logged_on/2]).
+-export([get_response/1, get_tag/1, add_user/3, logged_on/2, disconnect_user/1]).
 
 -record(tag, {name, attributes, children}).
 
@@ -103,6 +103,9 @@ pid_tokens(Pid) ->
 
 add_user(Username, Avatar, ID) ->
   lists:concat(["<addUser username=\"", Username, "\" avatar=\"", Avatar, "\" userid=\"", ID, "\"/>"]).
+
+disconnect_user(ID) ->
+  lists:concat(["<disconnectUser userId=\"", ID, "\"/>"]).
 
 logged_on(Username, ID) ->
     lists:concat(["<loggedOn username=\"", Username, "\" userid=\"", ID, "\"/>"]).

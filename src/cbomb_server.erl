@@ -210,6 +210,10 @@ handle_info({{private, s}, Msg},  S = #state{socket=AcceptSocket}) ->
     send(AcceptSocket, Msg, []),
     {noreply, S};
 
+handle_info({{_, disconnectUser}, Msg},  S = #state{socket=AcceptSocket}) ->
+    send(AcceptSocket, Msg, []),
+    {noreply, S};
+
 handle_info({{private, _}, Msg},  S = #state{socket=AcceptSocket}) ->
     %io:fwrite(lists:concat(["PRIVATE (in_game): ", Msg, "I am ", S#state.name, " (", S#state.userid, ")\n"])),
     %passthrough
@@ -220,9 +224,24 @@ handle_info(?SOCK(E), S = #state{socket=Socket}) ->
     io:format("Unexpected input: ~p~n", [E]),
     %send(Socket, "<badxml/>", [E]),
     {noreply, S};
-handle_info({tcp_closed, _Socket}, S) ->
-    io:fwrite("tcp closed...\n"),
+
+handle_info({tcp_closed, _Socket}, S = #state{next=lobby_lurk}) ->
+    % clean-up
+    ebus:unsub(self(), "lobby"),
+
+    % notify lobby lurkers
+    Tag = cbomb_xml:disconnect_user(S#state.userid),
+    ebus:pub("lobby", {{lobby, disconnectUser}, Tag}),
     {stop, normal, S};
+
+handle_info({tcp_closed, _Socket}, S = #state{next=in_game}) ->
+    %if in game, ebus:pub to opponent's channel whatever tag is needed (surrender?)
+    Tag = cbomb_xml:disconnect_user(S#state.userid),
+
+    %notify opponent
+    ebus:pub(S#state.opponentid, {{private, disconnectUser}, Tag}),
+    {stop, normal, S};
+
 handle_info({tcp_error, _Socket, _}, S) ->
     io:fwrite("tcp error...\n"),
     {stop, normal, S};
