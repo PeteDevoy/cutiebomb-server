@@ -16,6 +16,7 @@ My excuse to learn Erlang -- an attempt at writing a TCP/IP socket server for th
 - [ ] implement all events/states
 - [ ] implement any timeouts and resource clean-up required
 - [ ] test
+- [ ] legal due dil/permission seeking
 - [ ] deploy somewhere, for great justice
 
 ## Development
